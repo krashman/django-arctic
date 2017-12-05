@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 from .forms import SimpleSearchForm
 from .loading import (get_role_model, get_user_role_model)
-from .utils import (arctic_setting, view_from_url)
+from .utils import (arctic_setting, reverse_url, view_from_url)
 from .widgets import SelectizeAutoComplete
 
 Role = get_role_model()
@@ -82,8 +82,25 @@ class FormMixin(object):
     use_widget_overloads = True
     layout = None
     _fields = []
+    links = None             # Optional links such as list of linked items
     readonly_fields = None
-    ALLOWED_COLUMNS = 12        # There are 12 columns available
+    ALLOWED_COLUMNS = 12     # There are 12 columns available
+
+    def get_links(self):
+        if not self.links:
+            return None
+
+        allowed_links = []
+        for link in self.links:
+
+            # check permission based on named_url
+            if not view_from_url(link[1]).has_permission(self.request.user):
+                continue
+
+            allowed_links.append({
+                'label': link[0],
+                'url': reverse_url(link[1], self.get_object())})
+        return allowed_links
 
     def get_layout(self):
         if not self.layout:
@@ -282,23 +299,6 @@ class FormMixin(object):
     def _update_form_fields(self, form, widget_overloads,
                             widgets_to_be_overloaded):
         for field in form.fields:
-            field_class_name = form.fields[field].__class__.__name__
-            if field_class_name == 'ModelChoiceField':
-                for key, values in settings.ARCTIC_AUTOCOMPLETE.items():
-                    field_cls = '.'.join(values[0].lower().split('.')[-2:])
-                    if field_cls == str(form.fields[field].queryset.
-                                        model._meta):
-                        url = reverse('autocomplete', args=[key, ''])
-                        choices = ()
-                        if form.instance.pk:
-                            field_id = getattr(form.instance, field +
-                                               '_id')
-                            field_value = getattr(form.instance, field)
-                            choices = ((field_id, field_value),)
-                        form.fields[field].widget = SelectizeAutoComplete(
-                            attrs=form.fields[field].widget.attrs,
-                            choices=choices,
-                            url=url)
             if self.use_widget_overloads:
                 widget_class = form.fields[field].widget.__class__.__name__
                 if widget_class in widgets_to_be_overloaded:
@@ -323,6 +323,25 @@ class FormMixin(object):
                         new_widget = new_widget_class(
                             form.fields[field].widget.attrs)
                     form.fields[field].widget = new_widget
+
+            field_class_name = form.fields[field].__class__.__name__
+            if field_class_name == 'ModelChoiceField' and \
+               hasattr(settings, 'ARCTIC_AUTOCOMPLETE'):
+                for key, values in settings.ARCTIC_AUTOCOMPLETE.items():
+                    field_cls = '.'.join(values[0].lower().split('.')[-2:])
+                    if field_cls == str(form.fields[field].queryset.
+                                        model._meta):
+                        url = reverse('autocomplete', args=[key, ''])
+                        choices = ()
+                        if form.instance.pk:
+                            field_id = getattr(form.instance, field +
+                                               '_id')
+                            field_value = getattr(form.instance, field)
+                            choices = ((field_id, field_value),)
+                        form.fields[field].widget = SelectizeAutoComplete(
+                            attrs=form.fields[field].widget.attrs,
+                            choices=choices,
+                            url=url)
 
             if self.readonly_fields and field in self.readonly_fields:
                 form.fields[field].widget.attrs['readonly'] = True

@@ -120,7 +120,7 @@ $(document).ready(function() {
     });
 
     $('[js-timepicker]').each(function(index) {
-        var date = new Date($(this).attr("data-time")) == 'Invalid Date' ? new Date() : new Date($(this).attr("data-date"))
+        var date = new Date($(this).attr("data-time")) == 'Invalid Date' ? new Date() : new Date($(this).attr("data-time"))
         $(this).datepicker({
             onlyTimepicker: true,
             language: 'en',
@@ -131,7 +131,7 @@ $(document).ready(function() {
     });
 
     $('[js-datetimepicker]').each(function(index) {
-        var date = new Date($(this).attr("data-datetime")) == 'Invalid Date' ? new Date() : new Date($(this).attr("data-date"))
+        var date = new Date($(this).attr("data-datetime")) == 'Invalid Date' ? new Date() : new Date($(this).attr("data-datetime"))
         $(this).datepicker({
             language: 'en',
             todayButton: true,

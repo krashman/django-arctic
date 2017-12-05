@@ -438,6 +438,10 @@ class ListView(View, ListMixin, base.ListView):
         if has_confirm_link and field_url_name in self.confirm_links:
             field['confirm'] = self.confirm_links[field_url_name]
 
+    def add_confirm_link(self, has_confirm_link, field, field_url_name):
+        if has_confirm_link and field_url_name in self.confirm_links:
+            field['confirm'] = self.confirm_links[field_url_name]
+
     def get_field_value(self, field_name, obj):
         # first try to find a virtual field
         virtual_field_name = "get_{}_field".format(field_name)
@@ -601,7 +605,7 @@ class DataListView(TemplateView, ListMixin):
                 field['value'] = self.get_field_value(field_name, obj)
                 if field_name in field_links.keys():
                     field['url'] = self._reverse_field_link(
-                        field_links[field_name], obj)
+                        field_links[field_name], obj, self.primary_key)
                 if field_name in field_classes:
                     field['class'] = field_classes[field_name]
                 row.append(field)
@@ -681,6 +685,7 @@ class CreateView(FormMediaMixin, View, SuccessMessageMixin,
 
     def get_context_data(self, **kwargs):
         context = super(CreateView, self).get_context_data(**kwargs)
+        context['links'] = self.get_links()
         context['layout'] = self.get_layout()
         return context
 
@@ -711,6 +716,7 @@ class FormView(FormMediaMixin, View, SuccessMessageMixin, FormMixin,
 
     def get_context_data(self, **kwargs):
         context = super(FormView, self).get_context_data(**kwargs)
+        context['links'] = self.get_links()
         context['layout'] = self.get_layout()
         return context
 

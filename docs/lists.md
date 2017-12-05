@@ -2,12 +2,12 @@
 
 Arctic has ListViews that greatly extend the ones provided by Django, this 
 tutorial will explore all its features.
-It is recomended to use the project created in the [Getting Started](../#getting-started) chapter as a starting point.
+It is recomended to use the project created in the [Getting Started](index.md#getting-started) chapter as a starting point.
 
 ## Database backed ListView
 
 In this tutorial we're going to explore Arctic's ListView features, to start
-we're going first create a new Django app. In the terminal, inside your project's 
+we'll first create a new Django app. In the terminal, inside your project's 
 directory:
 
     ./manage.py startapp articles
@@ -111,7 +111,7 @@ Finally add an entry to `ARCTIC_MENU` in `config/settings.py`:
 Go to the browser and check your newly created list.
 It should look something like this:
 
-![arctic screenshot](../img/lists-1.png)
+![arctic screenshot](img/lists-1.png)
 
 
 ### Displaying Foreign Keys in a List
@@ -167,7 +167,103 @@ the `published` field with some [Font Awesome icons](http://fontawesome.io/icons
             symbol = 'fa-check' if row.published else 'fa-minus'
             return mark_safe('<i class="fa {}"></i>'.format(symbol))
 
-If there's need for more extensive HTML in a field, consider using an external 
+If there's a need for more extensive HTML in a field, consider using a 
 template file instead of embedding markup in a string.
 
 
+### Links
+
+The ListView supports 3 types of links:
+
+- `tool_links` - these links are displayed on top right side of the table and
+  are links that are not connected to the data in the table.
+- `field_links` - these are linked to a column and turn the specified field 
+  into a link.
+- `action_links` - similar to field links, but instead of turning a field into a 
+  link, they are added at the end of a row.
+
+![arctic screenshot](img/lists-2.png)
+
+#### Tool Links
+
+First let's create a tool link, this link will go to the dashboard, so in 
+`articles/views.py` add the following property to `ArticleListView`:
+
+    tool_links = [
+        ('Dashboard', 'index', 'fa-dashboard'),
+    ]
+
+The `tool_links` format is a list of `('label', 'named url', 'icon')` if more
+than one is given they will be displayed in a dropdown, otherwise it will be a 
+button.
+
+#### Field Links
+
+Next we'll create a field link to a form, so the first step is to setup a basic 
+form in `articles/views.py`:
+
+    from arctic.generics import ListView, UpdateView
+
+    ...
+
+    class ArticleUpdateView(UpdateView):
+        model = models.Article
+        fields = '__all__'
+        permission_required = 'change_articles'
+
+Then expose the form on `articles/urls.py`:
+
+    urlpatterns = [
+        ...
+        url(r'^update/(?P<pk>\d+)$', views.ArticleUpdateView.as_view(),
+            name='update'),
+    ]
+
+Now it's ready to be used, back in `articles/views.py` add the `action_links` 
+property to `ArticleListView`:
+
+    field_links = {
+        'title': 'articles:update',
+    }
+
+The `field_links` property is a dictionary of `'field': 'named url'`. 
+
+By default the value of the `pk` field is added to the named url, this 
+usually represents the primary key for each row. If other fields need to be
+coupled with the named url, then a list of `('named url', 'field1', 'field2', ...)`
+can be used instead of just `'named url'`.
+
+#### Action Links
+
+The delete function will be an action link, so first let's create an 
+`ArticleDeleteView` in `articles/views.py`:
+
+    from django.core.urlresolvers import reverse_lazy
+    from arctic.generics import DeleteView, ListView, UpdateView
+
+    ...
+
+    class ArticleDeleteView(DeleteView):
+        model = models.Article
+        success_url = reverse_lazy('articles:list')
+        permission_required = 'delete_article'
+
+Expose the `ArticleDeleteView` on `articles/urls.py`:
+
+    urlpatterns = [
+        ...
+        url(r'^delete/(?P<pk>\d+)$', views.ArticleDeleteView.as_view(),
+            name='delete'),
+    ]
+
+Add the `action_links` property to `ArticleListView`:
+
+    action_links = [
+        ('delete', 'articles:delete', 'fa-trash'),
+    ]
+
+The `action_links` is a list of `('action name', 'named url', 'icon')`.
+
+Like field links it will use by default `pk` together with the named_url, 
+this can be changed by replacing the `'named url'` string with a list of 
+`('named url', 'field1', 'field2', ...)`.
