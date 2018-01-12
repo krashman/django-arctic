@@ -99,4 +99,39 @@ $(document).ready(function() {
     $searchIcon.on('click',  function (){
         $('form').submit();
     })
+
+    confirmDialog();
 });
+
+
+//make it prototype
+var confirmDialog = function() {
+    var $dialog = '';
+    var $dialogOpen = $('[data-confirm-dialog]');
+    var $dialogClose ='';
+
+    $dialogOpen.on('click', function() {
+        var content = this.getAttribute('data-confirm-dialog');
+        var dialogTemplate = `<div class="dialog__overlay" data-dialog-close>
+            <div class="dialog__window">
+                <div class="dialog__close" data-dialog-close><span class="icon"></span></div>
+                <div class="dialog__content js--modal-content">
+                ${content}
+            </div></div></div>`
+        if ($dialog.length) {
+            $dialog.remove();
+        }
+        $("body").append(dialogTemplate);
+        $dialog = $('.dialog__overlay');
+        $dialogClose = $('[data-dialog-close]');
+        bindClose($dialogClose, $dialog);
+    });
+
+}
+
+var bindClose = function(close, dialog) {
+    close.on('click', function() {
+        dialog.remove();
+        close.off();
+    });
+}

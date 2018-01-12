@@ -123,7 +123,7 @@
                                         {% if column.type == 'field' %}
                                             <td {% if column.class %}class="{{ column.class }}"{%endif%}>
                                                 {% if column.confirm %}
-                                                    <a data-toggle="modal" data-target="#modal{{ column.value }}">
+                                                    <a data-confirm-dialog="#modal{{ column.value }}">
                                                 {% elif column.url %}
                                                     <a href="{{ column.url }}">
                                                 {% endif %}
@@ -162,7 +162,7 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    <a data-toggle="modal" class="action-{{ link.label }} btn btn-secondary btn-sm show-on-hover" data-target="#modal{{ link.label }}" title=" 2{{ link.label|capfirst }}">
+                                                    <a class="action-{{ link.label }} btn btn-secondary btn-sm show-on-hover" data-confirm-dialog="#modal{{ column.value }}" title=" 2{{ link.label|capfirst }}">
                                                         {% elif not link.confirm %}
                                                     <a href="{{ link.url }}" class="action-{{ link.label }} btn btn-secondary btn-sm show-on-hover" title="{{ link.label|capfirst }}">
                                                         {% endif %}

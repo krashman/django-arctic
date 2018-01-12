@@ -1,0 +1,56 @@
+.dialog {
+    &__overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch; //for safari
+        z-index: 9999999;
+    }
+
+    &__window {
+        position: relative;
+        max-width: 500px;
+        margin: 0;
+        background-color: white;
+        overflow-x: hidden;
+
+        @media screen and (min-width: 500px) {
+            margin: 50px auto;
+        }
+    }
+
+    &__close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 50px;
+        height: 50px;
+        // padding-top: ($close-button-size - map-get($site-close, height)) / 2;
+        // padding-left: ($close-button-size - map-get($site-close, width)) / 2;
+        background-color: black;
+        cursor: pointer;
+
+        .icon {
+            // @include image($site-close);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        @media screen and (min-width: 500px) {
+            transition: background-color 300ms ease;
+
+            &:hover {
+                background-color: grey;
+            }
+        }
+    }
+
+    &__content {
+        margin-top: 50px;
+        min-height: 200px;
+    }
+}
